@@ -1,0 +1,187 @@
+#!/bin/bash
+
+# ============================================================
+# FINAL PIPELINE — kws_transformer_ctc
+# ============================================================
+
+# ------------------------------------------------------------
+# STEP 1: DATA INGESTION
+# ------------------------------------------------------------
+# Input folders:
+# data/raw/audio/        → .wav files
+# data/raw/transcripts/  → exact text files
+# data/raw/annotations/  → _Annotated.txt files
+#
+# Used by:
+# - src/data/audio_loader.py
+# - src/data/text_loader.py
+
+
+# ------------------------------------------------------------
+# STEP 2: DATA VALIDATION (FINAL RULE)
+# ------------------------------------------------------------
+# ONLY RULE:
+# If annotation file content == "#"
+#     → discard sample
+# Else
+#     → keep sample
+#
+# NO OTHER CHECKS:
+# - No transcript vs audio validation
+# - No spelling validation
+# - No word count check
+# - No audio length filtering
+#
+# Files involved:
+# - src/data/audio_loader.py
+# - src/data/text_loader.py
+# - src/data/dataset.py
+
+
+# ------------------------------------------------------------
+# STEP 3: FEATURE EXTRACTION
+# ------------------------------------------------------------
+# File:
+# src/data/feature_extraction.py
+#
+# Process:
+# - Load audio
+# - Extract log-mel or MFCC
+# - Normalize features
+#
+# Output:
+# data/processed/features/
+
+
+# ------------------------------------------------------------
+# STEP 4: TEXT TOKENIZATION
+# ------------------------------------------------------------
+# File:
+# src/data/text_loader.py
+#
+# Process:
+# - Convert text to characters
+# - Add CTC blank token
+# - Encode tokens numerically
+#
+# Output:
+# data/processed/tokenized_text/
+
+
+# ------------------------------------------------------------
+# STEP 5: DATASET PREPARATION
+# ------------------------------------------------------------
+# File:
+# src/data/dataset.py
+#
+# Creates:
+# - (audio_features, token_ids)
+# - padding and masks
+#
+# Uses split files:
+# data/splits/train.txt
+# data/splits/val.txt
+# data/splits/test.txt
+
+
+# ------------------------------------------------------------
+# STEP 6: MODEL ARCHITECTURE
+# ------------------------------------------------------------
+# Directory:
+# src/model/
+#
+# Files:
+# - transformer_encoder.py
+# - ctc_head.py
+# - model.py
+#
+# Flow:
+# Audio → Transformer Encoder → Linear Layer → CTC Loss
+
+
+# ------------------------------------------------------------
+# STEP 7: TRAINING
+# ------------------------------------------------------------
+# Directory:
+# src/training/
+#
+# Files:
+# - train.py
+# - loss.py
+# - optimizer.py
+# - scheduler.py
+#
+# Configs:
+# configs/model.yaml
+# configs/training.yaml
+# configs/paths.yaml
+#
+# Output:
+# outputs/checkpoints/
+# outputs/logs/
+
+
+# ------------------------------------------------------------
+# STEP 8: CTC DECODING
+# ------------------------------------------------------------
+# File:
+# src/inference/ctc_decode.py
+#
+# Function:
+# - Remove blank tokens
+# - Collapse repeated characters
+# - Generate decoded sequence
+
+
+# ------------------------------------------------------------
+# STEP 9: WORD-LEVEL ALIGNMENT
+# ------------------------------------------------------------
+# Files:
+# - src/inference/align.py
+# - src/inference/timestamp_extractor.py
+#
+# Process:
+# - Map CTC frames to characters
+# - Group characters into words
+# - Extract start and end timestamps
+#
+# Output:
+# outputs/predictions/aligned_words.json
+
+
+# ------------------------------------------------------------
+# STEP 10: EVALUATION
+# ------------------------------------------------------------
+# Directory:
+# src/evaluation/
+#
+# Files:
+# - wer.py
+# - alignment_metrics.py
+#
+# Metrics:
+# - Word Error Rate
+# - Timestamp deviation
+
+
+# ------------------------------------------------------------
+# STEP 11: EXECUTION SCRIPTS
+# ------------------------------------------------------------
+# scripts/preprocess.py       → steps 1–5
+# scripts/train.py            → training
+# scripts/evaluate.py         → evaluation
+# scripts/infer_alignment.py  → inference
+
+
+# ------------------------------------------------------------
+# STEP 12: FINAL OUTPUT
+# ------------------------------------------------------------
+# outputs/
+# ├── checkpoints/
+# ├── logs/
+# └── predictions/
+#     └── aligned_words.json
+#
+# ------------------------------------------------------------
+# END OF PIPELINE
+# ------------------------------------------------------------
