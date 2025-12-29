@@ -25,8 +25,7 @@ def extract_logmel(
         power=2.0,
     )
     logmel = librosa.power_to_db(mel, ref=np.max)
-    return logmel.T  # (time, features)
-
+    return logmel.T 
 
 def normalize(features: np.ndarray) -> np.ndarray:
     mean = features.mean(axis=0, keepdims=True)
@@ -59,4 +58,5 @@ if __name__ == "__main__":
 
     process_directory(AUDIO_DIR, OUTPUT_DIR)
     print("Feature extraction completed.")
+
 
