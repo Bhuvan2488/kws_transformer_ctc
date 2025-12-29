@@ -14,7 +14,7 @@ def cleanup_invalid_samples(
         if is_invalid_annotation(ann_file):
             base = ann_file.stem.replace("_Annotated", "")
 
-            audio = audio_dir / f"{base}.wav"
+            audio = audio_dir / f"{base}.mp3"
             transcript = transcript_dir / f"{base}.txt"
 
             ann_file.unlink(missing_ok=True)
