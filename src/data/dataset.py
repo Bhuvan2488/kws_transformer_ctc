@@ -1,3 +1,7 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
 from pathlib import Path
 from src.data.text_loader import is_invalid_annotation
 
@@ -6,24 +10,22 @@ def cleanup_invalid_samples(
     transcript_dir: Path,
     annotation_dir: Path,
 ):
-    """
-    Deletes annotation, audio, and transcript files
-    if annotation content is '#'
-    """
-
     for ann_file in annotation_dir.glob("*_Annotated.txt"):
         if is_invalid_annotation(ann_file):
-            base_name = ann_file.name.replace("_Annotated.txt", "")
+            base = ann_file.stem.replace("_Annotated", "")
 
-            audio_file = audio_dir / f"{base_name}.wav"
-            transcript_file = transcript_dir / f"{base_name}.txt"
+            audio = audio_dir / f"{base}.wav"
+            transcript = transcript_dir / f"{base}.txt"
 
-            # delete files if they exist
-            if ann_file.exists():
-                ann_file.unlink()
+            ann_file.unlink(missing_ok=True)
+            audio.unlink(missing_ok=True)
+            transcript.unlink(missing_ok=True)
 
-            if audio_file.exists():
-                audio_file.unlink()
+            print(f"Deleted invalid sample: {base}")
 
-            if transcript_file.exists():
-                transcript_file.unlink()
+if __name__ == "__main__":
+    cleanup_invalid_samples(
+        Path("data/raw/audio"),
+        Path("data/raw/transcripts"),
+        Path("data/raw/annotations"),
+    )
