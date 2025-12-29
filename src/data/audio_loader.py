@@ -7,5 +7,5 @@ def load_audio(audio_path: Path, sr: int = 16000) -> np.ndarray:
     return audio
 
 if __name__ == "__main__":
-    audio = load_audio(Path("data/raw/audio/sample.wav"))
+    audio = load_audio(Path("data/raw/audio/sample.mp3"))
     print(audio.shape)
