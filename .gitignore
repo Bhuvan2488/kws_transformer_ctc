@@ -7,3 +7,7 @@ data/raw/transcripts/*.txt
 
 # Ignore annotation files
 data/raw/annotations/*Annotated*.txt
+
+
+__pycache__/
+*.pyc
