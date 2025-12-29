@@ -11,3 +11,6 @@ data/raw/annotations/*Annotated*.txt
 
 __pycache__/
 *.pyc
+
+data/processed/features/*.npy
+
