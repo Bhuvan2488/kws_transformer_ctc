@@ -1,7 +1,3 @@
-# src/data/feature_extraction.py
-# ------------------------------------------------------------
-# STEP 3: FEATURE EXTRACTION
-# ------------------------------------------------------------
 import os
 import sys
 sys.path.append(os.getcwd())
@@ -63,3 +59,4 @@ if __name__ == "__main__":
 
     process_directory(AUDIO_DIR, OUTPUT_DIR)
     print("Feature extraction completed.")
+
