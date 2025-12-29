@@ -1,9 +1,6 @@
 from pathlib import Path
 
 def is_invalid_annotation(annotation_path: Path) -> bool:
-    """
-    Returns True if '#' is present anywhere in annotation file
-    """
     content = annotation_path.read_text(encoding="utf-8")
     return "#" in content
 
