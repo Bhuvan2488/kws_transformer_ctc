@@ -99,26 +99,75 @@
 # Audio → Transformer Encoder → Linear Layer → CTC Loss
 
 
+# ============================================================
+# STEP 7: TRAINING  (EXPLICIT & COMPLETE)
+# ============================================================
+
 # ------------------------------------------------------------
-# STEP 7: TRAINING
+# PURPOSE
 # ------------------------------------------------------------
-# Directory:
+# Train Transformer + CTC model using prepared dataset
+
+# ------------------------------------------------------------
+# DIRECTORIES USED
+# ------------------------------------------------------------
 # src/training/
-#
-# Files:
-# - train.py
-# - loss.py
-# - optimizer.py
-# - scheduler.py
-#
-# Configs:
-# configs/model.yaml
-# configs/training.yaml
-# configs/paths.yaml
-#
-# Output:
-# outputs/checkpoints/
-# outputs/logs/
+# src/model/
+# src/data/
+
+# ------------------------------------------------------------
+# FILES INVOLVED (ALL)
+# ------------------------------------------------------------
+
+# DATA
+# src/data/dataset.py
+#   - SpeechDataset
+#   - collate_fn
+
+# MODEL
+# src/model/transformer_encoder.py
+# src/model/ctc_head.py
+# src/model/model.py
+
+# TRAINING
+# src/training/train.py        → main training loop
+# src/training/optimizer.py    → optimizer (Adam / AdamW)
+# src/training/scheduler.py    → LR scheduler (optional)
+# src/training/loss.py         → NOT USED (CTC inside model)
+
+# ------------------------------------------------------------
+# INPUT FILES / FOLDERS
+# ------------------------------------------------------------
+# data/processed/features/        → .npy log-mel features
+# data/processed/tokenized_text/ → tokenized transcripts (.json)
+# data/splits/train.txt
+# data/splits/val.txt
+
+# ------------------------------------------------------------
+# DATA FLOW (NO AMBIGUITY)
+# ------------------------------------------------------------
+# SpeechDataset (dataset.py)
+#   → DataLoader (collate_fn from dataset.py)
+#   → batch:
+#       - audio
+#       - tokens
+#       - audio_lengths
+#       - token_lengths
+#   → KWSCTCModel.forward()
+#   → CTCLoss (inside model.py)
+#   → backward()
+#   → optimizer.step()
+
+# ------------------------------------------------------------
+# OUTPUTS
+# ------------------------------------------------------------
+# outputs/checkpoints/   → model_epoch_*.pt
+# outputs/logs/          → loss logs
+
+# ------------------------------------------------------------
+# EXECUTION
+# ------------------------------------------------------------
+# python src/training/train.py
 
 
 # ------------------------------------------------------------
