@@ -1,6 +1,8 @@
 from pathlib import Path
 import random
 
+
+
 # -------------------------------
 # CONFIG
 # -------------------------------
@@ -20,6 +22,7 @@ def create_splits():
 
     # collect all audio sample IDs
     samples = [f.stem for f in AUDIO_DIR.glob("*")]
+    samples = [s for s in samples if s != ".gitkeep"]
 
     if not samples:
         raise RuntimeError("No audio files found!")
