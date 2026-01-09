@@ -170,16 +170,87 @@
 # python src/training/train.py
 
 
+# ============================================================
+# STEP 8: CTC DECODING (EXPLICIT & FINAL)
+# ============================================================
 # ------------------------------------------------------------
-# STEP 8: CTC DECODING
+# PURPOSE
 # ------------------------------------------------------------
-# File:
+# Convert frame-level CTC model outputs into a clean
+# character sequence with frame-level alignment info,
+# to enable word-level timestamp extraction in Step 9.
+# ------------------------------------------------------------
+# DIRECTORIES USED
+# ------------------------------------------------------------
+# src/inference/
+# ------------------------------------------------------------
+# FILES INVOLVED
+# ------------------------------------------------------------
 # src/inference/ctc_decode.py
+# ------------------------------------------------------------
+# INPUTS
+# ------------------------------------------------------------
+# - Logits from trained KWSCTCModel
+# Shape: (T, vocab_size) or (B, T, vocab_size)
+# - vocab.json (for blank token index)
+# ------------------------------------------------------------
+# OUTPUTS
+# ------------------------------------------------------------
+# - Decoded character sequence
+# - Frame-aligned character spans
 #
-# Function:
-# - Remove blank tokens
-# - Collapse repeated characters
-# - Generate decoded sequence
+# Example output (per sample):
+# [
+#   (char_id, start_frame, end_frame),
+#   ...
+# ]
+# ------------------------------------------------------------
+# DECODING RULES (STRICT CTC)
+# ------------------------------------------------------------
+# 1. Apply argmax over vocabulary for each time frame
+# 2. Collapse consecutive repeated tokens
+# 3. Remove blank tokens (AFTER collapsing)
+# 4. Preserve frame indices for alignment
+# ------------------------------------------------------------
+# CRITICAL ASSUMPTIONS
+# ------------------------------------------------------------
+# - Blank token index MUST match training (usually 0)
+# - Greedy decoding ONLY (NO beam search, NO LM)
+# - Decoding is character-level
+# ------------------------------------------------------------
+# DATA FLOW
+# ------------------------------------------------------------
+# Model logits
+# → argmax over vocab
+# → collapse repeats
+# → remove blanks
+# → emit (char_id, start_frame, end_frame)
+# ------------------------------------------------------------
+# WHY THIS FORMAT IS REQUIRED
+# ------------------------------------------------------------
+# - Frame spans are mandatory for Step 9
+# - Word boundaries are built from character spans
+# - Timestamps are computed using frame → time mapping
+# ------------------------------------------------------------
+# EXECUTION
+# ------------------------------------------------------------
+# Called inside:
+# - src/inference/align.py
+# - scripts/infer_alignment.py
+# ------------------------------------------------------------
+# OUTPUT CONSUMERS
+# ------------------------------------------------------------
+# - src/inference/timestamp_extractor.py
+# - outputs/predictions/aligned_words.json
+# ------------------------------------------------------------
+# PIPELINE COMPATIBILITY
+# ------------------------------------------------------------
+# - Fully compatible with Step 7 implementation
+# - No dependency on optimizer, scheduler, or model size
+# - Stable for CPU and GPU inference
+# ------------------------------------------------------------
+# END OF STEP 8
+# ------------------------------------------------------------
 
 
 # ------------------------------------------------------------
