@@ -13,22 +13,6 @@ def extract_word_timestamps(
     hop_length: int = 160,
     sample_rate: int = 16000,
 ) -> List[Dict]:
-    """
-    Args:
-        char_spans:
-            [(char_id, start_frame, end_frame), ...]
-        id2char:
-            mapping from char_id to character
-    Returns:
-        [
-          {
-            "word": str,
-            "start_time": float,
-            "end_time": float
-          },
-          ...
-        ]
-    """
 
     words = []
     current_word = []
@@ -56,7 +40,6 @@ def extract_word_timestamps(
         current_word.append(ch)
         word_end_frame = end_f
 
-    # flush last word
     if current_word:
         words.append({
             "word": "".join(current_word),
@@ -65,3 +48,36 @@ def extract_word_timestamps(
         })
 
     return words
+
+
+# --------------------------------------------------
+# STANDALONE TEST
+# --------------------------------------------------
+if __name__ == "__main__":
+    # fake vocab
+    id2char = {
+        1: "h",
+        2: "i",
+        3: " ",
+        4: "t",
+        5: "h",
+        6: "e",
+        7: "r",
+        8: "e",
+    }
+
+    # "hi there"
+    fake_char_spans = [
+        (1, 0, 2),
+        (2, 3, 4),
+        (3, 5, 5),   # space
+        (4, 6, 7),
+        (5, 8, 9),
+        (6, 10, 11),
+        (7, 12, 13),
+        (8, 14, 15),
+    ]
+
+    words = extract_word_timestamps(fake_char_spans, id2char)
+    for w in words:
+        print(w)
