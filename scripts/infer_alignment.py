@@ -99,7 +99,7 @@ def main():
     parser = argparse.ArgumentParser("CTC Forced Alignment Inference")
     parser.add_argument("--audio", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--vocab", type=Path, default=Path("data/processed/tokenized_text/vocab.json"))
+    parser.add_argument("--vocab", type=Path, default=Path("data/processed/tokenize_text/vocab.json"))
     parser.add_argument("--output", type=Path, default=Path("outputs/predictions/aligned_words.json"))
 
     args = parser.parse_args()
@@ -118,3 +118,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
