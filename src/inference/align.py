@@ -1,4 +1,7 @@
 # src/inference/align.py
+import os
+import sys
+sys.path.append(os.getcwd())
 
 import json
 import torch
@@ -74,3 +77,4 @@ if __name__ == "__main__":
     )
 
     print(json.dumps(output, indent=2))
+
