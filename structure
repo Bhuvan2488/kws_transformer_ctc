@@ -49,11 +49,6 @@ kws_transformer_ctc/
 │   │   ├── logger.py
 │   │   └── config.py
 │
-├── configs/
-│   ├── model.yaml
-│   ├── training.yaml
-│   └── paths.yaml
-│
 ├── outputs/
 │   ├── checkpoints/
 │   ├── logs/
