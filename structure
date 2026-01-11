@@ -43,12 +43,6 @@ kws_transformer_ctc/
 │   │   ├── wer.py
 │   │   └── alignment_metrics.py
 │
-│   ├── utils/
-│   │   ├── audio_utils.py
-│   │   ├── text_utils.py
-│   │   ├── logger.py
-│   │   └── config.py
-│
 ├── outputs/
 │   ├── checkpoints/
 │   ├── logs/
