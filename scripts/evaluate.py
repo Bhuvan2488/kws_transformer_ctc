@@ -29,7 +29,7 @@ def load_annotation(annotation_path: Path):
 
 def main():
     # paths (single-file evaluation)
-    annotation_path = Path("data/raw/annotations/q3g_Annotated.txt")
+    annotation_path = Path("data/raw/annotations/gQ3g_Annotated.txt")
     prediction_path = Path("outputs/predictions/aligned_words.json")
 
     # load ground truth
@@ -60,4 +60,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
