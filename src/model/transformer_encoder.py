@@ -29,13 +29,8 @@ class TransformerEncoder(nn.Module):
         )
 
     def forward(self, x, lengths):
-        """
-        x: (B, T, F)
-        lengths: (B,)
-        """
         x = self.input_proj(x)
 
-        # padding mask: True = ignore
         max_len = x.size(1)
         mask = torch.arange(max_len, device=lengths.device)[None, :] >= lengths[:, None]
 
