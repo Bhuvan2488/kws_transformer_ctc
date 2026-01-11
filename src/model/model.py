@@ -1,5 +1,10 @@
+import os
+import sys
+sys.path.append(os.getcwd())
+
 import torch
 import torch.nn as nn
+
 
 from src.model.transformer_encoder import TransformerEncoder
 from src.model.ctc_head import CTCHead
