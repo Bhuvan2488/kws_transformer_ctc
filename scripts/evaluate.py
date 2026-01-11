@@ -1,4 +1,7 @@
 # scripts/evaluate.py
+import os
+import sys
+sys.path.append(os.getcwd())
 
 import json
 from pathlib import Path
@@ -57,3 +60,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
