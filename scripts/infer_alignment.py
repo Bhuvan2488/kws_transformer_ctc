@@ -8,7 +8,6 @@ import json
 from pathlib import Path
 
 import torch
-import numpy as np
 
 from src.data.audio_loader import load_audio
 from src.data.feature_extraction import extract_logmel, normalize
@@ -21,40 +20,34 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 @torch.no_grad()
-def run_inference(
-    audio_path: Path,
-    checkpoint_path: Path,
-    vocab_path: Path,
-    output_path: Path,
-):
+def run_inference(audio_path, checkpoint_path, vocab_path, output_path):
     # ----------------------------
     # Load vocab
     # ----------------------------
     vocab = load_vocab(vocab_path)
     id2char = {v: k for k, v in vocab.items()}
     blank_id = vocab["<BLANK>"]
-    vocab_size = len(vocab)
 
     # ----------------------------
-    # Load audio → features
+    # Audio → features
     # ----------------------------
     audio = load_audio(audio_path)
     features = extract_logmel(audio)
     features = normalize(features)
 
     features = torch.tensor(features, dtype=torch.float32).unsqueeze(0)
-    lengths = torch.tensor([features.shape[1]], dtype=torch.long)
+    audio_lengths = torch.tensor([features.shape[1]], dtype=torch.long)
 
     features = features.to(DEVICE)
-    lengths = lengths.to(DEVICE)
+    audio_lengths = audio_lengths.to(DEVICE)
 
     # ----------------------------
     # Load model
     # ----------------------------
     model = KWSCTCModel(
         input_dim=features.shape[-1],
-        vocab_size=vocab_size,
-        model_dim=128,  # MUST match training
+        vocab_size=len(vocab),
+        model_dim=128,   # MUST match training
     ).to(DEVICE)
 
     ckpt = torch.load(checkpoint_path, map_location=DEVICE)
@@ -62,21 +55,20 @@ def run_inference(
     model.eval()
 
     # ----------------------------
-    # Forward pass → logits
+    # Forward → logits
     # ----------------------------
-    logits = model.forward_logits(
+    logits = model.infer_logits(
         audio=features,
-        audio_lengths=lengths,
-    )  # (B, T, V)
+        audio_lengths=audio_lengths,
+    )
 
     # ----------------------------
-    # CTC decoding
+    # CTC decode
     # ----------------------------
-    char_spans_batch = greedy_ctc_decode(logits, blank_id=blank_id)
-    char_spans = char_spans_batch[0]
+    char_spans = greedy_ctc_decode(logits, blank_id=blank_id)[0]
 
     # ----------------------------
-    # Word-level timestamps
+    # Word timestamps
     # ----------------------------
     words = extract_word_timestamps(
         char_spans,
@@ -99,8 +91,16 @@ def main():
     parser = argparse.ArgumentParser("CTC Forced Alignment Inference")
     parser.add_argument("--audio", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--vocab", type=Path, default=Path("data/processed/tokenize_text/vocab.json"))
-    parser.add_argument("--output", type=Path, default=Path("outputs/predictions/aligned_words.json"))
+    parser.add_argument(
+        "--vocab",
+        type=Path,
+        default=Path("data/processed/tokenized_text/vocab.json"),
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("outputs/predictions/aligned_words.json"),
+    )
 
     args = parser.parse_args()
 
@@ -118,4 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
