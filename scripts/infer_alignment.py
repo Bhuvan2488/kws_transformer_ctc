@@ -94,7 +94,7 @@ def main():
     parser.add_argument(
         "--vocab",
         type=Path,
-        default=Path("data/processed/tokenized_text/vocab.json"),
+        default=Path("data/processed/tokenize_text/vocab.json"),
     )
     parser.add_argument(
         "--output",
@@ -118,3 +118,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
