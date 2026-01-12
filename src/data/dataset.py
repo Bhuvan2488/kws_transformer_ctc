@@ -8,16 +8,6 @@ from torch.utils.data import Dataset
 
 
 class SpeechDataset(Dataset):
-    """
-    Dataset for Transformer + CTC training.
-
-    Returns:
-        audio: Tensor (T, F)
-        tokens: Tensor (L,)
-        audio_length: int
-        token_length: int
-    """
-
     def __init__(
         self,
         split_file: Path,
@@ -40,28 +30,17 @@ class SpeechDataset(Dataset):
 
     def __getitem__(self, idx):
         sample_id = self.sample_ids[idx]
-
-        # ---------------------------
-        # Load audio features
-        # ---------------------------
         feat_path = self.features_dir / f"{sample_id}.npy"
         if not feat_path.exists():
             raise FileNotFoundError(f"Missing feature file: {feat_path}")
 
         features = np.load(feat_path)
-
-        # ---------------------------
-        # Load tokenized text
-        # ---------------------------
         token_path = self.tokens_dir / f"{sample_id}.json"
         if not token_path.exists():
             raise FileNotFoundError(f"Missing token file: {token_path}")
 
         with open(token_path, "r", encoding="utf-8") as f:
             token_data = json.load(f)
-
-        # IMPORTANT FIX:
-        # token_data is a LIST, not a dict
         tokens = np.array(token_data, dtype=np.int64)
 
         return {
