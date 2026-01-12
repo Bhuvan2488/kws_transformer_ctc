@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List, Dict
 import json
 
-CTC_BLANK = "<BLANK>"  # ID = 0
+CTC_BLANK = "<BLANK>" 
 
 
 def load_transcript(transcript_path: Path) -> str:
