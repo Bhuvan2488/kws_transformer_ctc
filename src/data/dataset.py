@@ -49,16 +49,8 @@ class SpeechDataset(Dataset):
             "audio_length": features.shape[0],
             "token_length": len(tokens),
         }
-
-
-# ------------------------------------------------------------
-# COLLATE FUNCTION (FOR DATALOADER)
-# ------------------------------------------------------------
+        
 def collate_fn(batch: List[Dict]):
-    """
-    Pads variable-length audio & token sequences for CTC.
-    """
-
     audio_lengths = torch.tensor(
         [item["audio_length"] for item in batch], dtype=torch.long
     )
@@ -85,11 +77,6 @@ def collate_fn(batch: List[Dict]):
         "audio_lengths": audio_lengths,
         "token_lengths": token_lengths,
     }
-
-
-# ------------------------------------------------------------
-# DEBUG RUN
-# ------------------------------------------------------------
 if __name__ == "__main__":
     dataset = SpeechDataset(
         split_file=Path("data/splits/train.txt"),
