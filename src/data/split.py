@@ -1,11 +1,6 @@
 from pathlib import Path
 import random
 
-
-
-# -------------------------------
-# CONFIG
-# -------------------------------
 AUDIO_DIR = Path("data/raw/audio")
 SPLIT_DIR = Path("data/splits")
 
@@ -14,13 +9,8 @@ VAL_RATIO = 0.1
 TEST_RATIO = 0.1
 
 
-# -------------------------------
-# MAIN LOGIC
-# -------------------------------
 def create_splits():
     SPLIT_DIR.mkdir(parents=True, exist_ok=True)
-
-    # collect all audio sample IDs
     samples = [f.stem for f in AUDIO_DIR.glob("*")]
     samples = [s for s in samples if s != ".gitkeep"]
 
@@ -47,8 +37,5 @@ def create_splits():
     print(f"Test:  {len(test_ids)}")
 
 
-# -------------------------------
-# ENTRY POINT
-# -------------------------------
 if __name__ == "__main__":
     create_splits()
