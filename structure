@@ -1,0 +1,67 @@
+speech-alignment-transformer-ctc/
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── problem_statement
+├── pipeline
+├── structure.txt
+│
+├── data/
+│   ├── raw/
+│   │   ├── audio/
+│   │   │   └── .gitkeep
+│   │   └── annotations/
+│   │       └── .gitkeep
+│   │
+│   ├── processed/
+│   │   ├── features/
+│   │   │   └── .gitkeep
+│   │   └── frame_labels/
+|   |       └── .gitkeep
+│   │
+│   └── splits/
+│       ├── train.txt
+│       ├── val.txt
+│       └── test.txt
+│
+├── outputs/
+│   ├── checkpoints/
+│   │   └── logs/
+│   │       └── .gitkeep
+│   └── predictions/
+│       └── aligned_words.json
+│
+├── scripts/
+│   ├── preprocess.py
+│   ├── train.py
+│   ├── evaluate.py
+│   └── infer_alignment.py
+│
+└── src/
+    ├── data/
+    │   ├── annotation_loader.py
+    │   ├── audio_loader.py
+    │   ├── clean.py
+    │   ├── dataset.py
+    │   ├── feature_extraction.py
+    │   ├── label_builder.py
+    │   └── split.py
+    │
+    ├── model/
+    │   ├── model.py
+    │   ├── transformer_encoder.py
+    │   └── frame_classifier.py
+    │
+    ├── training/
+    │   ├── train.py
+    │   ├── optimizer.py
+    │   └── scheduler.py
+    │
+    ├── inference/
+    │   ├── predict_frames.py
+    │   ├── align.py
+    │   ├── timestamp_extractor.py
+    │   └── word_timestamp_extractor.py
+    │
+    └── evaluation/
+        └── alignment_metrics.py
