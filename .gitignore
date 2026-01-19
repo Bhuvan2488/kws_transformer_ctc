@@ -1,12 +1,2 @@
-data/raw/audio/*.mp3
-data/raw/annotations/*.txt
-
-data/processed/features/*.npy
-data/processed/frame_labels/*.npy
-
-outputs/checkpoints/*
-outputs/logs/*
-outputs/predictions/*
-
 __pycache__/
 *.pyc
