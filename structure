@@ -1,4 +1,4 @@
-speech-alignment-transformer-ctc/
+kws_model/
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
