@@ -1,17 +1,12 @@
-# Ignore raw audio
 data/raw/audio/*.mp3
-data/raw/audio/*.wav
+data/raw/annotations/*.txt
 
-# Ignore transcripts
-data/raw/transcripts/*.txt
+data/processed/features/*.npy
+data/processed/frame_labels/*.npy
 
-# Ignore annotation files
-data/raw/annotations/*Annotated*.txt
-
+outputs/checkpoints/*
+outputs/logs/*
+outputs/predictions/*
 
 __pycache__/
 *.pyc
-
-data/processed/features/*.npy
-
-data/processed/tokenize_text/*.json
