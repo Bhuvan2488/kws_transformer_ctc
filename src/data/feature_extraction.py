@@ -1,3 +1,4 @@
+#src/data/feature_extraction.py
 from pathlib import Path
 from typing import Dict
 import numpy as np
@@ -96,3 +97,4 @@ if __name__ == "__main__":
     sample_index = build_sample_index("train")
     clean_index = clean_sample_index(sample_index)
     extract_features(clean_index, FEATURES_DIR)
+
