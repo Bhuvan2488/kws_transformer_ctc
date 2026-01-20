@@ -59,7 +59,6 @@ kws_model/
     │
     ├── inference/
     │   ├── predict_frames.py
-    │   ├── align.py
     │   ├── timestamp_extractor.py
     │   └── word_timestamp_extractor.py
     │
