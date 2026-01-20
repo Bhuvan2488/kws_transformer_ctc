@@ -1,89 +1,116 @@
-import json
-import numpy as np
+#src/data/dataset.py
 from pathlib import Path
-from typing import List, Dict
-
+from typing import List, Tuple
+import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+
+from src.data.annotation_loader import load_split_ids
+from src.data.label_builder import BLANK_ID
 
 
-class SpeechDataset(Dataset):
-    def __init__(
-        self,
-        split_file: Path,
-        features_dir: Path,
-        tokens_dir: Path,
-    ):
-        self.sample_ids = self._load_split(split_file)
-        self.features_dir = features_dir
-        self.tokens_dir = tokens_dir
+FEATURES_DIR = Path("data/processed/features")
+FRAME_LABELS_DIR = Path("data/processed/frame_labels")
+
+
+class FrameDataset(Dataset):
+    def __init__(self, split_name: str):
+        self.split_name = split_name
+        self.sample_ids = load_split_ids(split_name)
 
         if len(self.sample_ids) == 0:
-            raise RuntimeError(f"Split file {split_file} is empty!")
+            raise RuntimeError(f"[EMPTY DATASET] split={split_name}")
 
-    def _load_split(self, split_file: Path) -> List[str]:
-        with open(split_file, "r", encoding="utf-8") as f:
-            return [line.strip() for line in f if line.strip()]
-
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.sample_ids)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         sample_id = self.sample_ids[idx]
-        feat_path = self.features_dir / f"{sample_id}.npy"
+
+        feat_path = FEATURES_DIR / f"{sample_id}.npy"
+        label_path = FRAME_LABELS_DIR / f"{sample_id}.npy"
+
         if not feat_path.exists():
-            raise FileNotFoundError(f"Missing feature file: {feat_path}")
+            raise FileNotFoundError(f"[FEATURE MISSING] {feat_path}")
+        if not label_path.exists():
+            raise FileNotFoundError(f"[LABEL MISSING] {label_path}")
 
         features = np.load(feat_path)
-        token_path = self.tokens_dir / f"{sample_id}.json"
-        if not token_path.exists():
-            raise FileNotFoundError(f"Missing token file: {token_path}")
+        labels = np.load(label_path)
 
-        with open(token_path, "r", encoding="utf-8") as f:
-            token_data = json.load(f)
-        tokens = np.array(token_data, dtype=np.int64)
+        if features.shape[0] != labels.shape[0]:
+            raise RuntimeError(
+                f"[LENGTH MISMATCH] {sample_id}: "
+                f"features={features.shape[0]} labels={labels.shape[0]}"
+            )
 
-        return {
-            "audio": torch.tensor(features, dtype=torch.float32),
-            "tokens": torch.tensor(tokens, dtype=torch.long),
-            "audio_length": features.shape[0],
-            "token_length": len(tokens),
-        }
-        
-def collate_fn(batch: List[Dict]):
-    audio_lengths = torch.tensor(
-        [item["audio_length"] for item in batch], dtype=torch.long
+        x = torch.from_numpy(features).float()
+        y = torch.from_numpy(labels).long()
+
+        return x, y
+
+
+def collate_fn(
+    batch: List[Tuple[torch.Tensor, torch.Tensor]]
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    xs, ys = zip(*batch)
+    lengths = torch.tensor([x.shape[0] for x in xs], dtype=torch.long)
+
+    max_len = lengths.max().item()
+    batch_size = len(xs)
+    feat_dim = xs[0].shape[1]
+
+    x_padded = torch.zeros(batch_size, max_len, feat_dim, dtype=torch.float32)
+    y_padded = torch.full(
+        (batch_size, max_len),
+        fill_value=BLANK_ID,
+        dtype=torch.long,
     )
-    token_lengths = torch.tensor(
-        [item["token_length"] for item in batch], dtype=torch.long
+
+    for i, (x, y) in enumerate(zip(xs, ys)):
+        T = x.shape[0]
+        x_padded[i, :T] = x
+        y_padded[i, :T] = y
+
+    return x_padded, y_padded, lengths
+
+
+def build_dataloader(
+    split_name: str,
+    batch_size: int = 16,
+    shuffle: bool = False,
+    num_workers: int = 0,
+) -> DataLoader:
+    dataset = FrameDataset(split_name)
+
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        collate_fn=collate_fn,
+        pin_memory=False,
     )
 
-    max_audio_len = int(audio_lengths.max())
-    max_token_len = int(token_lengths.max())
+    print(
+        f"✅ DataLoader built | split={split_name} | "
+        f"samples={len(dataset)} | batch_size={batch_size}"
+    )
 
-    batch_size = len(batch)
-    feat_dim = batch[0]["audio"].shape[1]
+    return loader
 
-    padded_audio = torch.zeros(batch_size, max_audio_len, feat_dim)
-    padded_tokens = torch.zeros(batch_size, max_token_len, dtype=torch.long)
 
-    for i, item in enumerate(batch):
-        padded_audio[i, : item["audio_length"]] = item["audio"]
-        padded_tokens[i, : item["token_length"]] = item["tokens"]
-
-    return {
-        "audio": padded_audio,
-        "tokens": padded_tokens,
-        "audio_lengths": audio_lengths,
-        "token_lengths": token_lengths,
-    }
 if __name__ == "__main__":
-    dataset = SpeechDataset(
-        split_file=Path("data/splits/train.txt"),
-        features_dir=Path("data/processed/features"),
-        tokens_dir=Path("data/processed/tokenize_text"),
+    train_loader = build_dataloader(
+        split_name="train",
+        batch_size=4,
+        shuffle=True,
+        num_workers=0,
     )
 
-    sample = dataset[0]
-    print("Audio shape:", sample["audio"].shape)
-    print("Token length:", sample["token_length"])
+    x, y, lengths = next(iter(train_loader))
+
+    print("\n🔎 STEP 5 SANITY CHECK")
+    print("x shape      :", x.shape)
+    print("y shape      :", y.shape)
+    print("lengths      :", lengths)
