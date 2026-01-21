@@ -1,3 +1,8 @@
+#scripts/preprocess.py
+import os
+import sys
+sys.path.append(os.getcwd())
+
 from pathlib import Path
 import argparse
 
@@ -51,5 +56,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     run_preprocess(args.split)
+
 
 
