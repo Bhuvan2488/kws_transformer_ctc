@@ -13,7 +13,6 @@ def build_scheduler(
         mode="min",
         factor=factor,
         patience=patience,
-        min_lr=min_lr,
-        verbose=True,
+        min_lr=min_lr
     )
     return scheduler
