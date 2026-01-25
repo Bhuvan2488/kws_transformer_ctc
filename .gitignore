@@ -1,6 +1,5 @@
 # Ignore raw audio
 data/raw/audio/*.mp3
-data/raw/audio/*.wav
 
 # Ignore transcripts
 data/raw/transcripts/*.txt
