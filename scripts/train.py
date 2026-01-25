@@ -12,9 +12,10 @@ from src.training.train import train
 
 
 def main():
-    print("🚀 Launching training pipeline...")
+    print("Launching training pipeline...")
     train()
 
 
 if __name__ == "__main__":
     main()
+
