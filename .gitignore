@@ -1,8 +1,37 @@
-data/raw/audio/*.mp3
-data/raw/transcripts/*.txt
-data/raw/annotations/*Annotated*.txt
+# raw
+data/raw/audio/*
+!data/raw/audio/.gitkeep
 
+data/raw/annotations/*
+!data/raw/annotations/.gitkeep
+
+# processed
+data/processed/features/*
+!data/processed/features/.gitkeep
+
+data/processed/frame_labels/*
+!data/processed/frame_labels/.gitkeep
+
+# outputs
+outputs/checkpoints/*
+!outputs/checkpoints/.gitkeep
+
+outputs/checkpoints/logs/*
+!outputs/checkpoints/logs/.gitkeep
+
+outputs/predictions/*
+!outputs/predictions/.gitkeep
+
+# python
 __pycache__/
 *.pyc
+.ipynb_checkpoints/
 
-data/processed/features/*.npy
+# env + ide
+.venv/
+venv/
+.env
+.vscode/
+.idea/
+.DS_Store
+*.log
