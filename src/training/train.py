@@ -1,6 +1,7 @@
-#src/training/train.py
+# src/training/train.py
 from pathlib import Path
 import json
+import re
 import torch
 import torch.nn as nn
 
@@ -49,6 +50,20 @@ def masked_cross_entropy(
     return criterion(logits, targets)
 
 
+def _find_latest_checkpoint(checkpoint_dir: Path) -> Path | None:
+    ckpts = list(checkpoint_dir.glob("model_epoch_*.pt"))
+    if not ckpts:
+        return None
+
+    def extract_epoch(p: Path) -> int:
+        m = re.search(r"model_epoch_(\d+)\.pt$", p.name)
+        return int(m.group(1)) if m else -1
+
+    ckpts.sort(key=extract_epoch)
+    latest = ckpts[-1]
+    return latest
+
+
 def train():
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -86,7 +101,18 @@ def train():
 
     criterion = nn.CrossEntropyLoss()
 
-    for epoch in range(1, NUM_EPOCHS + 1):
+    # ✅ AUTO-RESUME (minimal change)
+    start_epoch = 1
+    latest_ckpt = _find_latest_checkpoint(CHECKPOINT_DIR)
+    if latest_ckpt is not None:
+        ckpt = torch.load(latest_ckpt, map_location=DEVICE)
+        model.load_state_dict(ckpt["model_state"])
+        optimizer.load_state_dict(ckpt["optimizer_state"])
+        scheduler.load_state_dict(ckpt["scheduler_state"])
+        start_epoch = int(ckpt["epoch"]) + 1
+        log(f"✅ Resuming from {latest_ckpt.name} (next epoch={start_epoch})")
+
+    for epoch in range(start_epoch, NUM_EPOCHS + 1):
         model.train()
         total_loss = 0.0
         total_batches = 0
