@@ -13,14 +13,13 @@ from src.evaluation.alignment_metrics import evaluate
 
 
 def main():
-    print("🚀 Running STEP 10 — Evaluation")
+    print(" Running STEP 10 — Evaluation")
     report = evaluate()
 
-    print("\n📊 FINAL EVALUATION SUMMARY")
+    print("\n FINAL EVALUATION SUMMARY")
     for k, v in report.items():
         print(f"{k:25s}: {v}")
 
 
 if __name__ == "__main__":
     main()
-
