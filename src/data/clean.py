@@ -14,12 +14,12 @@ def is_invalid_annotation(annotation_path: Path) -> bool:
 
         # Rule 1: reject comments
         if "#" in line:
-            print(f"❌ '#' detected | {annotation_path.name}:{line_num}")
+            print(f" '#' detected | {annotation_path.name}:{line_num}")
             return True
 
         parts = line.split("\t")
         if len(parts) != 3:
-            print(f"❌ Bad format | {annotation_path.name}:{line_num} → {line}")
+            print(f" Bad format | {annotation_path.name}:{line_num} → {line}")
             return True
 
         start, end, word = parts
@@ -29,12 +29,12 @@ def is_invalid_annotation(annotation_path: Path) -> bool:
             start = float(start)
             end = float(end)
         except ValueError:
-            print(f"❌ Non-numeric timestamp | {annotation_path.name}:{line_num}")
+            print(f" Non-numeric timestamp | {annotation_path.name}:{line_num}")
             return True
 
         # Rule 3: valid time range
         if start < 0 or end <= start:
-            print(f"❌ Invalid time range | {annotation_path.name}:{line_num}")
+            print(f" Invalid time range | {annotation_path.name}:{line_num}")
             return True
 
     return False
@@ -52,18 +52,18 @@ def clean_sample_index(
 
         if is_invalid_annotation(ann_path):
             invalid_count += 1
-            print(f"🗑️ Removed invalid sample: {sample_id}")
+            print(f" Removed invalid sample: {sample_id}")
             continue
 
         valid_samples[sample_id] = paths
 
-    print("\n📊 STEP 2 — DATA VALIDATION REPORT")
+    print("\n STEP 2 — DATA VALIDATION REPORT")
     print(f"Total samples   : {total}")
     print(f"Valid samples   : {len(valid_samples)}")
     print(f"Invalid samples : {invalid_count}")
 
     if not valid_samples:
-        raise RuntimeError("❌ All samples are invalid after cleanup!")
+        raise RuntimeError(" All samples are invalid after cleanup!")
 
     return valid_samples
 
@@ -75,5 +75,5 @@ if __name__ == "__main__":
     clean_idx = clean_sample_index(idx)
 
     k = next(iter(clean_idx))
-    print("\n✅ Example valid sample:")
+    print("\n Example valid sample:")
     print(k, clean_idx[k])
