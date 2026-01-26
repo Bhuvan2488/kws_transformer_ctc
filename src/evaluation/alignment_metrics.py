@@ -66,7 +66,7 @@ def find_best_match(
 
 
 def evaluate():
-    print("\n📊 STEP 10 — ALIGNMENT EVALUATION STARTED")
+    print("\n STEP 10 — ALIGNMENT EVALUATION STARTED")
 
     predictions = load_predictions()
 
@@ -117,9 +117,9 @@ def evaluate():
     OUTPUT_REPORT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    print("\n✅ STEP 10 — EVALUATION COMPLETED")
+    print("\n STEP 10 — EVALUATION COMPLETED")
     print(json.dumps(report, indent=2))
-    print(f"\n📁 Report saved to: {OUTPUT_REPORT}")
+    print(f"\n Report saved to: {OUTPUT_REPORT}")
 
     return report
 
