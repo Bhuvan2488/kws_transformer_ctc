@@ -62,10 +62,10 @@ def predict_frames(sample_id: str) -> Path:
     checkpoint_path = get_latest_checkpoint()
     model = load_model(checkpoint_path, num_classes)
 
-    print(f"🔍 Using checkpoint: {checkpoint_path.name}")
-    print(f"📐 Frames           : {T}")
-    print(f"🧠 Num classes      : {num_classes}")
-    print(f"🖥️ Device           : {DEVICE}")
+    print(f" Using checkpoint: {checkpoint_path.name}")
+    print(f" Frames           : {T}")
+    print(f" Num classes      : {num_classes}")
+    print(f" Device           : {DEVICE}")
 
     with torch.no_grad():
         logits = model(x, lengths)
@@ -79,7 +79,7 @@ def predict_frames(sample_id: str) -> Path:
     out_path = PREDICTIONS_DIR / f"frame_preds_{sample_id}.npy"
     np.save(out_path, preds)
 
-    print(f"✅ Frame predictions saved: {out_path}")
+    print(f" Frame predictions saved: {out_path}")
     return out_path
 
 
