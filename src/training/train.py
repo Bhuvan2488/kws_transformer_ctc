@@ -73,7 +73,7 @@ def train():
     label_map = json.loads(label_map_path.read_text())
     num_classes = len(label_map)
 
-    log("🚀 STEP 7 — TRAINING STARTED")
+    log(" STEP 7 — TRAINING STARTED")
     log(f"Device        : {DEVICE}")
     log(f"Num classes   : {num_classes}")
     log(f"BLANK_ID      : {BLANK_ID}")
@@ -101,7 +101,7 @@ def train():
 
     criterion = nn.CrossEntropyLoss()
 
-    # ✅ AUTO-RESUME (minimal change)
+    #  AUTO-RESUME (minimal change)
     start_epoch = 1
     latest_ckpt = _find_latest_checkpoint(CHECKPOINT_DIR)
     if latest_ckpt is not None:
@@ -110,7 +110,7 @@ def train():
         optimizer.load_state_dict(ckpt["optimizer_state"])
         scheduler.load_state_dict(ckpt["scheduler_state"])
         start_epoch = int(ckpt["epoch"]) + 1
-        log(f"✅ Resuming from {latest_ckpt.name} (next epoch={start_epoch})")
+        log(f" Resuming from {latest_ckpt.name} (next epoch={start_epoch})")
 
     for epoch in range(start_epoch, NUM_EPOCHS + 1):
         model.train()
@@ -152,7 +152,7 @@ def train():
             ckpt_path,
         )
 
-    log("🏁 TRAINING COMPLETED SUCCESSFULLY")
+    log(" TRAINING COMPLETED SUCCESSFULLY")
 
 
 if __name__ == "__main__":
