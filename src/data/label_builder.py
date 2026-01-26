@@ -68,7 +68,7 @@ def build_labels_for_dataset(
     features_dir: Path,
     output_dir: Path,
 ) -> None:
-    print("\n🏷️ STEP 4 — FRAME LABEL GENERATION STARTED")
+    print("\n STEP 4 — FRAME LABEL GENERATION STARTED")
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -99,17 +99,17 @@ def build_labels_for_dataset(
         out_path = output_dir / f"{sample_id}.npy"
         np.save(out_path, frame_labels)
 
-        print(f"✅ Labels saved: {out_path} | frames={T}")
+        print(f" Labels saved: {out_path} | frames={T}")
 
     label_map_path = output_dir / "label_map.json"
     with label_map_path.open("w", encoding="utf-8") as f:
         json.dump(label_map, f, indent=2, ensure_ascii=False)
 
-    print("\n📊 STEP 4 SUMMARY")
+    print("\n STEP 4 SUMMARY")
     print(f"Total samples processed : {total_samples}")
     print(f"Total labels (incl BLANK): {len(label_map)}")
     print(f"Label map saved to       : {label_map_path}")
-    print("🏁 STEP 4 COMPLETED SUCCESSFULLY")
+    print(" STEP 4 COMPLETED SUCCESSFULLY")
 
 
 if __name__ == "__main__":
