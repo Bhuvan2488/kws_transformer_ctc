@@ -99,8 +99,8 @@ def append_to_aligned_words(entries: List[Dict]) -> None:
     with OUTPUT_JSON.open("w", encoding="utf-8") as f:
         json.dump(existing, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ Updated alignment file: {OUTPUT_JSON}")
-    print(f"📝 Added {len(entries)} word segments")
+    print(f" Updated alignment file: {OUTPUT_JSON}")
+    print(f" Added {len(entries)} word segments")
 
 
 if __name__ == "__main__":
@@ -119,4 +119,4 @@ if __name__ == "__main__":
     entries = extract_word_timestamps(args.sample_id)
     append_to_aligned_words(entries)
 
-    print("\n⏱️ STEP 9 COMPLETED SUCCESSFULLY")
+    print("\n STEP 9 COMPLETED SUCCESSFULLY")
