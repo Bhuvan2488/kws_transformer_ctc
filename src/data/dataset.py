@@ -93,7 +93,7 @@ def build_dataloader(
     )
 
     print(
-        f"✅ DataLoader built | split={split_name} | "
+        f" DataLoader built | split={split_name} | "
         f"samples={len(dataset)} | batch_size={batch_size}"
     )
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     x, y, lengths = next(iter(train_loader))
 
-    print("\n🔎 STEP 5 SANITY CHECK")
+    print("\n STEP 5 SANITY CHECK")
     print("x shape      :", x.shape)
     print("y shape      :", y.shape)
     print("lengths      :", lengths)
