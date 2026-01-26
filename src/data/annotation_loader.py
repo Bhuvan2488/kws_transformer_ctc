@@ -44,7 +44,7 @@ def build_sample_index(split_name: str) -> Dict[str, Dict[str, Path]]:
             "annotation_path": ann_path
         }
 
-    print(f"✅ Loaded {len(sample_index)} samples for split='{split_name}'")
+    print(f" Loaded {len(sample_index)} samples for split='{split_name}'")
     return sample_index
 
 
