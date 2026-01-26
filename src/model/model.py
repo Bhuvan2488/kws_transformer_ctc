@@ -66,7 +66,7 @@ if __name__ == "__main__":
     model = FrameAlignmentModel(num_classes=num_classes)
     logits = model(x, lengths)
 
-    print("\n🔎 STEP 6 SANITY CHECK")
+    print("\n STEP 6 SANITY CHECK")
     print("Input x      :", x.shape)
     print("Lengths      :", lengths)
     print("Logits       :", logits.shape)
