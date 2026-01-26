@@ -65,14 +65,14 @@ def process_sample(
     if loaded.shape != features.shape:
         raise RuntimeError(f"[SAVE ERROR] Shape mismatch for {out_path}")
 
-    print(f"✅ Features saved: {out_path} | shape={features.shape}")
+    print(f" Features saved: {out_path} | shape={features.shape}")
 
 
 def extract_features(
     clean_sample_index: Dict[str, Dict[str, Path]],
     output_dir: Path,
 ) -> None:
-    print("\n🔊 STEP 3 — FEATURE EXTRACTION STARTED")
+    print("\n STEP 3 — FEATURE EXTRACTION STARTED")
     print(f"Samples to process: {len(clean_sample_index)}")
 
     for sample_id, paths in clean_sample_index.items():
@@ -85,7 +85,7 @@ def extract_features(
 
         process_sample(sample_id, audio_path, output_dir)
 
-    print("\n📦 STEP 3 COMPLETED SUCCESSFULLY")
+    print("\n STEP 3 COMPLETED SUCCESSFULLY")
 
 
 if __name__ == "__main__":
@@ -97,4 +97,3 @@ if __name__ == "__main__":
     sample_index = build_sample_index("train")
     clean_index = clean_sample_index(sample_index)
     extract_features(clean_index, FEATURES_DIR)
-
