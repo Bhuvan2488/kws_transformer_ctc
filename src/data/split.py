@@ -31,7 +31,7 @@ def create_splits():
     (SPLIT_DIR / "val.txt").write_text("\n".join(val_ids))
     (SPLIT_DIR / "test.txt").write_text("\n".join(test_ids))
 
-    print("✅ Dataset split created successfully")
+    print(" Dataset split created successfully")
     print(f"Train: {len(train_ids)}")
     print(f"Val:   {len(val_ids)}")
     print(f"Test:  {len(test_ids)}")
