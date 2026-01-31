@@ -1,44 +1,47 @@
-kws_model/
+kws_model
+│
 ├── .gitignore
+├── pipeline.ipynb
+├── problem_statement
 ├── README.md
 ├── requirements.txt
-├── problem_statement
-├── pipeline
+├── structure
 ├── structure.txt
 │
-├── data/
-│   ├── raw/
-│   │   ├── audio/
+├── data
+│   ├── processed
+│   │   ├── features
 │   │   │   └── .gitkeep
-│   │   └── annotations/
+│   │   └── frame_labels
+│   │       └── label_map.json
+│   │
+│   ├── raw
+│   │   ├── annotations
+│   │   │   └── .gitkeep
+│   │   └── audio
 │   │       └── .gitkeep
 │   │
-│   ├── processed/
-│   │   ├── features/
-│   │   │   └── .gitkeep
-│   │   └── frame_labels/
-|   |       └── .gitkeep
-│   │
-│   └── splits/
+│   └── splits
 │       ├── train.txt
 │       ├── val.txt
 │       └── test.txt
 │
-├── outputs/
-│   ├── checkpoints/
-│   │   └── logs/
+├── outputs
+│   ├── checkpoints
+│   │   └── logs
 │   │       └── .gitkeep
-│   └── predictions/
+│   └── predictions
 │       └── aligned_words.json
 │
-├── scripts/
+├── scripts
 │   ├── preprocess.py
 │   ├── train.py
 │   ├── evaluate.py
-│   └── infer_alignment.py
+│   ├── infer_alignment.py
+│   └── infer_word.py
 │
-└── src/
-    ├── data/
+└── src
+    ├── data
     │   ├── annotation_loader.py
     │   ├── audio_loader.py
     │   ├── clean.py
@@ -47,20 +50,20 @@ kws_model/
     │   ├── label_builder.py
     │   └── split.py
     │
-    ├── model/
-    │   ├── model.py
-    │   ├── transformer_encoder.py
-    │   └── frame_classifier.py
+    ├── evaluation
+    │   └── alignment_metrics.py
     │
-    ├── training/
-    │   ├── train.py
-    │   ├── optimizer.py
-    │   └── scheduler.py
-    │
-    ├── inference/
+    ├── inference
     │   ├── predict_frames.py
     │   ├── timestamp_extractor.py
     │   └── word_timestamp_extractor.py
     │
-    └── evaluation/
-        └── alignment_metrics.py
+    ├── model
+    │   ├── frame_classifier.py
+    │   ├── model.py
+    │   └── transformer_encoder.py
+    │
+    └── training
+        ├── optimizer.py
+        ├── scheduler.py
+        └── train.py
