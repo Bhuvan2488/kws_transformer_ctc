@@ -1,2 +1,37 @@
-Transformer Encoder → Linear Head → per-frame word label (incl. BLANK):
-The objective is to build a speech alignment model using a Transformer Encoder trained directly on audio files and their Audacity annotation files. During training, the model learns word-level timing by converting Audacity word start and end timestamps into frame-level supervision. Audio is converted into log-mel acoustic features, and the Transformer produces frame-wise word label predictions (including a BLANK/non-word class) and is trained using CrossEntropyLoss. After training and deployment, the system will take an audio file and a target word as inputs and return the predicted start and end timestamps of that word in the audio (or report that the word is not present). This enables word-level forced alignment and precise keyword timestamp extraction using only audio and annotation-based supervision.
+Problem Statement — Keyword Spotting (KWS) Word Alignment
+
+Audio recordings lo spoken words ki exact start–end timestamps automatically extract cheyyadam tough, manual annotation costly & slow.
+Given audio files + word-level annotations (train time only), the goal is to frame-level word alignment model train chesi, new audio lo each word ekkada start/stop ayyindo high accuracy tho predict cheyyadam.
+
+Objectives:
+
+Raw audio ni frame-level log-mel features ga convert cheyyadam
+
+Word annotations ni frame-level labels ga map cheyyadam
+
+Transformer-based sequence model train chesi frame-wise word classification cheyyadam
+
+Predicted frames ni continuous word segments + timestamps ga convert cheyyadam
+
+Ground-truth tho compare chesi alignment accuracy evaluate cheyyadam
+
+Constraints & Challenges:
+
+Variable-length audio sequences
+
+Silence vs speech handling (BLANK class)
+
+Precise time-to-frame mapping
+
+Overlapping / close word boundaries
+
+Efficient padding & masking for Transformers
+
+Expected Outcome:
+
+Each audio file ki:
+[{ word, start_time, end_time }]
+
+Mean / median alignment error seconds lo minimize avvali
+
+Scalable pipeline: preprocess → train → infer → evaluate
