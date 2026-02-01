@@ -1,28 +1,43 @@
-#src/inference/word_timestamp_extractor.py
+# src/inference/word_timestamp_extractor.py
 from pathlib import Path
 from typing import List, Dict
 import json
 import numpy as np
+import torch
+import re
 
 from src.data.label_builder import BLANK_ID
 from src.inference.timestamp_extractor import segment_frames_to_times
+from src.model.model import FrameAlignmentModel
 
 
 PREDICTIONS_DIR = Path("outputs/predictions")
-LABEL_MAP_PATH = Path("data/processed/frame_labels/label_map.json")
+CHECKPOINT_DIR = Path("outputs/checkpoints")
 OUTPUT_JSON = PREDICTIONS_DIR / "aligned_words.json"
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def get_latest_checkpoint() -> Path:
+    ckpts = list(CHECKPOINT_DIR.glob("model_epoch_*.pt"))
+    if not ckpts:
+        raise FileNotFoundError("[NO CHECKPOINT FOUND]")
+
+    def epoch_num(p: Path) -> int:
+        m = re.search(r"model_epoch_(\d+)\.pt", p.name)
+        return int(m.group(1)) if m else -1
+
+    ckpts.sort(key=epoch_num)
+    return ckpts[-1]
 
 
 def load_label_map() -> Dict[int, str]:
-    label_map = json.loads(LABEL_MAP_PATH.read_text(encoding="utf-8"))
+    ckpt = torch.load(get_latest_checkpoint(), map_location=DEVICE)
+    label_map = ckpt["label_map"]
     return {int(v): k for k, v in label_map.items()}
 
 
-def extract_word_segments(
-    frame_preds: np.ndarray,
-) -> List[Dict]:
+def extract_word_segments(frame_preds: np.ndarray) -> List[Dict]:
     segments = []
-
     prev_label = BLANK_ID
     start_frame = None
 
@@ -89,10 +104,9 @@ def extract_word_timestamps(sample_id: str) -> List[Dict]:
 def append_to_aligned_words(entries: List[Dict]) -> None:
     PREDICTIONS_DIR.mkdir(parents=True, exist_ok=True)
 
+    existing = []
     if OUTPUT_JSON.exists():
         existing = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
-    else:
-        existing = []
 
     existing.extend(entries)
 
@@ -107,12 +121,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="STEP 9 — Word timestamp extraction")
-    parser.add_argument(
-        "--sample_id",
-        type=str,
-        required=True,
-        help="Sample ID (without extension)",
-    )
+    parser.add_argument("--sample_id", type=str, required=True)
 
     args = parser.parse_args()
 
