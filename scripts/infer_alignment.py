@@ -1,43 +1,36 @@
-#scripts/infer_alignment.py
+# scripts/infer_alignment.py
 import os
 import sys
 sys.path.append(os.getcwd())
 
 from pathlib import Path
-import argparse
-
+from src.data.annotation_loader import load_split_ids
 from src.inference.predict_frames import predict_frames
 from src.inference.word_timestamp_extractor import (
     extract_word_timestamps,
     append_to_aligned_words,
+    OUTPUT_JSON,
 )
 
+def infer_test_set():
+    print("\n INFERENCE PIPELINE — TEST SET")
 
-def infer_alignment(sample_id: str) -> None:
-    print("\n INFERENCE PIPELINE STARTED")
-    print(f" Sample ID: {sample_id}")
+    test_ids = load_split_ids("test")
+    print(f" Total test samples: {len(test_ids)}")
 
-    print("\n STEP 8 — Predicting frame labels")
-    frame_pred_path = predict_frames(sample_id)
+    # Reset predictions file
+    if OUTPUT_JSON.exists():
+        OUTPUT_JSON.unlink()
+        print(" Cleared old aligned_words.json")
 
-    print("\n STEP 9 — Extracting word timestamps")
-    word_entries = extract_word_timestamps(sample_id)
-    append_to_aligned_words(word_entries)
+    for i, sample_id in enumerate(test_ids, 1):
+        print(f"\n [{i}/{len(test_ids)}] Processing sample: {sample_id}")
 
-    print("\n INFERENCE PIPELINE COMPLETED SUCCESSFULLY")
-    print(f" Results appended to: outputs/predictions/aligned_words.json")
+        predict_frames(sample_id)
+        entries = extract_word_timestamps(sample_id)
+        append_to_aligned_words(entries)
 
+    print("\n TEST SET INFERENCE COMPLETED")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Run STEP 8 + STEP 9: frame prediction and word alignment"
-    )
-    parser.add_argument(
-        "--sample_id",
-        type=str,
-        required=True,
-        help="Sample ID (without extension)",
-    )
-
-    args = parser.parse_args()
-    infer_alignment(args.sample_id)
+    infer_test_set()
