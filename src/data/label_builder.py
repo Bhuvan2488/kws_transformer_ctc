@@ -1,4 +1,4 @@
-#src/data/label_builder.py
+# src/data/label_builder.py
 from pathlib import Path
 from typing import Dict, Tuple
 import json
@@ -46,10 +46,11 @@ def build_frame_labels(
     labels = np.full(shape=(num_frames,), fill_value=BLANK_ID, dtype=np.int64)
 
     for start_sec, end_sec, word in segments:
+        # 🔒 DO NOT CREATE NEW LABEL IDS HERE
         if word not in label_map:
-            label_map[word] = len(label_map)
-
-        word_id = label_map[word]
+            word_id = BLANK_ID
+        else:
+            word_id = label_map[word]
 
         start_frame = time_to_frame(start_sec)
         end_frame = int(math.ceil(end_sec * SAMPLE_RATE / HOP_LENGTH))
@@ -72,9 +73,18 @@ def build_labels_for_dataset(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # 🔒 LABEL MAP IS BUILT ONLY HERE
     label_map: Dict[str, int] = {BLANK_LABEL: BLANK_ID}
     total_samples = len(clean_sample_index)
 
+    # FIRST PASS: collect all words
+    for _, paths in clean_sample_index.items():
+        segments = parse_annotation_file(paths["annotation_path"])
+        for _, _, word in segments:
+            if word not in label_map:
+                label_map[word] = len(label_map)
+
+    # SECOND PASS: generate frame labels using frozen label_map
     for sample_id, paths in clean_sample_index.items():
         feature_path = features_dir / f"{sample_id}.npy"
         annotation_path = paths["annotation_path"]
@@ -110,20 +120,3 @@ def build_labels_for_dataset(
     print(f"Total labels (incl BLANK): {len(label_map)}")
     print(f"Label map saved to       : {label_map_path}")
     print(" STEP 4 COMPLETED SUCCESSFULLY")
-
-
-if __name__ == "__main__":
-    from src.data.annotation_loader import build_sample_index
-    from src.data.clean import clean_sample_index
-
-    FEATURES_DIR = Path("data/processed/features")
-    FRAME_LABELS_DIR = Path("data/processed/frame_labels")
-
-    sample_index = build_sample_index("train")
-    clean_index = clean_sample_index(sample_index)
-
-    build_labels_for_dataset(
-        clean_sample_index=clean_index,
-        features_dir=FEATURES_DIR,
-        output_dir=FRAME_LABELS_DIR,
-    )
