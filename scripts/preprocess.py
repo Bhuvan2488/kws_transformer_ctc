@@ -17,27 +17,26 @@ FRAME_LABELS_DIR = Path("data/processed/frame_labels")
 SPLITS_DIR = Path("data/splits")
 
 
-def prune_split_files(valid_ids: set):
-    split_files = [
-        SPLITS_DIR / "train.txt",
-        SPLITS_DIR / "val.txt",
-        SPLITS_DIR / "test.txt",
-    ]
+def prune_current_split(split_name: str, valid_ids: set):
+    """
+    Prune ONLY the active split file.
+    This prevents train preprocessing from destroying val/test splits.
+    """
+    split_file = SPLITS_DIR / f"{split_name}.txt"
 
-    for split_file in split_files:
-        if not split_file.exists():
-            print(f" Missing split file: {split_file}")
-            continue
+    if not split_file.exists():
+        print(f" Missing split file: {split_file}")
+        return
 
-        original = split_file.read_text().splitlines()
-        filtered = [sid for sid in original if sid in valid_ids]
+    original = split_file.read_text().splitlines()
+    filtered = [sid for sid in original if sid in valid_ids]
 
-        split_file.write_text("\n".join(filtered) + "\n", encoding="utf-8")
+    split_file.write_text("\n".join(filtered) + "\n", encoding="utf-8")
 
-        print(
-            f" Pruned {split_file.name} | "
-            f"kept={len(filtered)} removed={len(original) - len(filtered)}"
-        )
+    print(
+        f" Pruned {split_file.name} | "
+        f"kept={len(filtered)} removed={len(original) - len(filtered)}"
+    )
 
 
 def run_preprocess(split_name: str):
@@ -50,8 +49,8 @@ def run_preprocess(split_name: str):
     print("\n STEP 2 — DATA VALIDATION (STRICT)")
     clean_index = clean_sample_index(sample_index)
 
-    print("\n STEP 2.5 — PRUNING SPLIT FILES (GLOBAL)")
-    prune_split_files(set(clean_index.keys()))
+    print("\n STEP 2.5 — PRUNING CURRENT SPLIT ONLY")
+    prune_current_split(split_name, set(clean_index.keys()))
 
     print("\n STEP 3 — FEATURE EXTRACTION")
     extract_features(
