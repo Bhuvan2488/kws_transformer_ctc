@@ -7,12 +7,16 @@ AUDIO_DIR = Path("data/raw/audio")
 
 
 def get_audio_path(sample_id: str) -> Path:
+    if not sample_id or not sample_id.strip():
+        raise ValueError("[INVALID SAMPLE_ID] Empty or whitespace-only sample_id")
+
     audio_path = AUDIO_DIR / f"{sample_id}.mp3"
 
     if not audio_path.exists():
         raise FileNotFoundError(f"[AUDIO MISSING] {audio_path}")
 
     return audio_path
+
 
 
 def load_audio(audio_path: Path, sr: int = 16000) -> np.ndarray:
