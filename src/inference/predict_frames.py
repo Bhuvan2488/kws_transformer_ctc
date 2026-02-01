@@ -1,7 +1,6 @@
-#src/inference/predict_frames.py
+# src/inference/predict_frames.py
 from pathlib import Path
 import re
-import json
 import torch
 import numpy as np
 
@@ -11,7 +10,6 @@ from src.model.model import FrameAlignmentModel
 FEATURES_DIR = Path("data/processed/features")
 CHECKPOINT_DIR = Path("outputs/checkpoints")
 PREDICTIONS_DIR = Path("outputs/predictions")
-LABEL_MAP_PATH = Path("data/processed/frame_labels/label_map.json")
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -29,15 +27,18 @@ def get_latest_checkpoint() -> Path:
     return ckpts[-1]
 
 
-def load_model(checkpoint_path: Path, num_classes: int) -> FrameAlignmentModel:
-    model = FrameAlignmentModel(num_classes=num_classes)
+def load_model(checkpoint_path: Path):
     ckpt = torch.load(checkpoint_path, map_location=DEVICE)
 
+    num_classes = ckpt["num_classes"]
+    label_map = ckpt["label_map"]
+
+    model = FrameAlignmentModel(num_classes=num_classes)
     model.load_state_dict(ckpt["model_state"])
     model.to(DEVICE)
     model.eval()
 
-    return model
+    return model, label_map
 
 
 def predict_frames(sample_id: str) -> Path:
@@ -56,15 +57,12 @@ def predict_frames(sample_id: str) -> Path:
     x = torch.from_numpy(features).float().unsqueeze(0).to(DEVICE)
     lengths = torch.tensor([T], dtype=torch.long).to(DEVICE)
 
-    label_map = json.loads(LABEL_MAP_PATH.read_text())
-    num_classes = len(label_map)
-
     checkpoint_path = get_latest_checkpoint()
-    model = load_model(checkpoint_path, num_classes)
+    model, label_map = load_model(checkpoint_path)
 
     print(f" Using checkpoint: {checkpoint_path.name}")
     print(f" Frames           : {T}")
-    print(f" Num classes      : {num_classes}")
+    print(f" Num classes      : {len(label_map)}")
     print(f" Device           : {DEVICE}")
 
     with torch.no_grad():
@@ -87,12 +85,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="STEP 8 — Frame-level inference")
-    parser.add_argument(
-        "--sample_id",
-        type=str,
-        required=True,
-        help="Sample ID (without extension)",
-    )
+    parser.add_argument("--sample_id", type=str, required=True)
 
     args = parser.parse_args()
     predict_frames(args.sample_id)
