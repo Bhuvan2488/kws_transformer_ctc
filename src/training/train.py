@@ -30,38 +30,21 @@ def log(msg: str):
         f.write(msg + "\n")
 
 
-def masked_cross_entropy(
-    logits: torch.Tensor,
-    targets: torch.Tensor,
-    lengths: torch.Tensor,
-    criterion: nn.Module,
-) -> torch.Tensor:
+def masked_cross_entropy(logits, targets, lengths, criterion):
     B, T, C = logits.shape
-
     logits = logits.view(B * T, C)
     targets = targets.view(B * T)
-
     mask = torch.arange(T, device=lengths.device).unsqueeze(0) < lengths.unsqueeze(1)
     mask = mask.reshape(B * T)
-
-    logits = logits[mask]
-    targets = targets[mask]
-
-    return criterion(logits, targets)
+    return criterion(logits[mask], targets[mask])
 
 
-def _find_latest_checkpoint(checkpoint_dir: Path) -> Path | None:
+def _find_latest_checkpoint(checkpoint_dir):
     ckpts = list(checkpoint_dir.glob("model_epoch_*.pt"))
     if not ckpts:
         return None
-
-    def extract_epoch(p: Path) -> int:
-        m = re.search(r"model_epoch_(\d+)\.pt$", p.name)
-        return int(m.group(1)) if m else -1
-
-    ckpts.sort(key=extract_epoch)
-    latest = ckpts[-1]
-    return latest
+    ckpts.sort(key=lambda p: int(re.search(r"_(\d+)\.pt$", p.name).group(1)))
+    return ckpts[-1]
 
 
 def train():
@@ -69,78 +52,42 @@ def train():
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     LOG_FILE.write_text("")
 
-    label_map_path = Path("data/processed/frame_labels") / "label_map.json"
+    label_map_path = Path("data/processed/frame_labels/label_map.json")
     label_map = json.loads(label_map_path.read_text())
     num_classes = len(label_map)
 
-    log(" STEP 7 — TRAINING STARTED")
-    log(f"Device        : {DEVICE}")
-    log(f"Num classes   : {num_classes}")
-    log(f"BLANK_ID      : {BLANK_ID}")
-    log(f"Epochs        : {NUM_EPOCHS}")
-    log(f"Batch size    : {BATCH_SIZE}")
-    log(f"Learning rate : {LEARNING_RATE}")
+    train_loader = build_dataloader("train", BATCH_SIZE, shuffle=True)
 
-    train_loader = build_dataloader(
-        split_name="train",
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        num_workers=0,
-    )
-
-    model = FrameAlignmentModel(num_classes=num_classes)
-    model.to(DEVICE)
-
-    optimizer = build_optimizer(
-        model,
-        lr=LEARNING_RATE,
-        weight_decay=WEIGHT_DECAY,
-    )
-
+    model = FrameAlignmentModel(num_classes=num_classes).to(DEVICE)
+    optimizer = build_optimizer(model, LEARNING_RATE, WEIGHT_DECAY)
     scheduler = build_scheduler(optimizer)
-
     criterion = nn.CrossEntropyLoss()
 
-    #  AUTO-RESUME (minimal change)
     start_epoch = 1
-    latest_ckpt = _find_latest_checkpoint(CHECKPOINT_DIR)
-    if latest_ckpt is not None:
-        ckpt = torch.load(latest_ckpt, map_location=DEVICE)
+    latest = _find_latest_checkpoint(CHECKPOINT_DIR)
+    if latest:
+        ckpt = torch.load(latest, map_location=DEVICE)
         model.load_state_dict(ckpt["model_state"])
         optimizer.load_state_dict(ckpt["optimizer_state"])
         scheduler.load_state_dict(ckpt["scheduler_state"])
-        start_epoch = int(ckpt["epoch"]) + 1
-        log(f" Resuming from {latest_ckpt.name} (next epoch={start_epoch})")
+        start_epoch = ckpt["epoch"] + 1
 
     for epoch in range(start_epoch, NUM_EPOCHS + 1):
         model.train()
-        total_loss = 0.0
-        total_batches = 0
+        total_loss = 0
 
         for x, y, lengths in train_loader:
-            x = x.to(DEVICE)
-            y = y.to(DEVICE)
-            lengths = lengths.to(DEVICE)
-
+            x, y, lengths = x.to(DEVICE), y.to(DEVICE), lengths.to(DEVICE)
             optimizer.zero_grad()
-
             logits = model(x, lengths)
             loss = masked_cross_entropy(logits, y, lengths, criterion)
-
             loss.backward()
             optimizer.step()
-
             total_loss += loss.item()
-            total_batches += 1
 
-        avg_loss = total_loss / total_batches
+        avg_loss = total_loss / len(train_loader)
         scheduler.step(avg_loss)
 
-        lr = optimizer.param_groups[0]["lr"]
-
-        log(f"[Epoch {epoch:03d}] loss={avg_loss:.6f} lr={lr:.6e}")
-
-        ckpt_path = CHECKPOINT_DIR / f"model_epoch_{epoch}.pt"
         torch.save(
             {
                 "epoch": epoch,
@@ -148,11 +95,10 @@ def train():
                 "optimizer_state": optimizer.state_dict(),
                 "scheduler_state": scheduler.state_dict(),
                 "loss": avg_loss,
+                "label_map": label_map,   # 🔥 ONLY ADDITION
             },
-            ckpt_path,
+            CHECKPOINT_DIR / f"model_epoch_{epoch}.pt",
         )
-
-    log(" TRAINING COMPLETED SUCCESSFULLY")
 
 
 if __name__ == "__main__":
