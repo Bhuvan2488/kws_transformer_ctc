@@ -60,8 +60,7 @@ def _find_latest_checkpoint(checkpoint_dir: Path) -> Path | None:
         return int(m.group(1)) if m else -1
 
     ckpts.sort(key=extract_epoch)
-    latest = ckpts[-1]
-    return latest
+    return ckpts[-1]
 
 
 def train():
@@ -88,8 +87,7 @@ def train():
         num_workers=0,
     )
 
-    model = FrameAlignmentModel(num_classes=num_classes)
-    model.to(DEVICE)
+    model = FrameAlignmentModel(num_classes=num_classes).to(DEVICE)
 
     optimizer = build_optimizer(
         model,
@@ -98,10 +96,8 @@ def train():
     )
 
     scheduler = build_scheduler(optimizer)
-
     criterion = nn.CrossEntropyLoss()
 
-    #  AUTO-RESUME (minimal change)
     start_epoch = 1
     latest_ckpt = _find_latest_checkpoint(CHECKPOINT_DIR)
     if latest_ckpt is not None:
@@ -118,15 +114,11 @@ def train():
         total_batches = 0
 
         for x, y, lengths in train_loader:
-            x = x.to(DEVICE)
-            y = y.to(DEVICE)
-            lengths = lengths.to(DEVICE)
+            x, y, lengths = x.to(DEVICE), y.to(DEVICE), lengths.to(DEVICE)
 
             optimizer.zero_grad()
-
             logits = model(x, lengths)
             loss = masked_cross_entropy(logits, y, lengths, criterion)
-
             loss.backward()
             optimizer.step()
 
@@ -135,12 +127,10 @@ def train():
 
         avg_loss = total_loss / total_batches
         scheduler.step(avg_loss)
-
         lr = optimizer.param_groups[0]["lr"]
 
         log(f"[Epoch {epoch:03d}] loss={avg_loss:.6f} lr={lr:.6e}")
 
-        ckpt_path = CHECKPOINT_DIR / f"model_epoch_{epoch}.pt"
         torch.save(
             {
                 "epoch": epoch,
@@ -148,8 +138,10 @@ def train():
                 "optimizer_state": optimizer.state_dict(),
                 "scheduler_state": scheduler.state_dict(),
                 "loss": avg_loss,
+                "label_map": label_map,
+                "num_classes": num_classes,
             },
-            ckpt_path,
+            CHECKPOINT_DIR / f"model_epoch_{epoch}.pt",
         )
 
     log(" TRAINING COMPLETED SUCCESSFULLY")
