@@ -52,3 +52,19 @@ def extract_word_timestamps(sample_id: str):
             "end_time": round(et, 2),
         })
     return out
+def append_to_aligned_words(entries: List[Dict]) -> None:
+    PREDICTIONS_DIR.mkdir(parents=True, exist_ok=True)
+
+    if OUTPUT_JSON.exists():
+        existing = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+    else:
+        existing = []
+
+    existing.extend(entries)
+
+    with OUTPUT_JSON.open("w", encoding="utf-8") as f:
+        json.dump(existing, f, indent=2, ensure_ascii=False)
+
+    print(f" Updated alignment file: {OUTPUT_JSON}")
+    print(f" Added {len(entries)} word segments")
+
