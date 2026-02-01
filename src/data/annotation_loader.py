@@ -1,8 +1,9 @@
-#src/data/annotation_loader.py
+# src/data/annotation_loader.py
 from pathlib import Path
 from typing import Dict
 
 ANNOTATION_DIR = Path("data/raw/annotations")
+AUDIO_DIR = Path("data/raw/audio")
 SPLIT_DIR = Path("data/splits")
 
 
@@ -33,7 +34,6 @@ def load_split_ids(split_name: str) -> list[str]:
     return ids
 
 
-
 def build_sample_index(split_name: str) -> Dict[str, Dict[str, Path]]:
     from src.data.audio_loader import get_audio_path
 
@@ -53,8 +53,38 @@ def build_sample_index(split_name: str) -> Dict[str, Dict[str, Path]]:
     return sample_index
 
 
-if __name__ == "__main__":
-    index = build_sample_index("train")
-    first_key = next(iter(index))
-    print(first_key, index[first_key])
+# ============================
+# PREPROCESS-ONLY (NO SPLITS)
+# ============================
 
+def build_sample_index_all() -> Dict[str, Dict[str, Path]]:
+    from src.data.audio_loader import get_audio_path
+
+    sample_index = {}
+
+    annotation_files = [
+        p for p in ANNOTATION_DIR.glob("*_Annotated.txt")
+        if p.name != ".gitkeep"
+    ]
+
+    if not annotation_files:
+        raise RuntimeError("[NO ANNOTATION FILES FOUND IN raw/annotations]")
+
+    for ann_path in annotation_files:
+        sample_id = ann_path.name.replace("_Annotated.txt", "")
+        audio_path = get_audio_path(sample_id)
+
+        sample_index[sample_id] = {
+            "audio_path": audio_path,
+            "annotation_path": ann_path
+        }
+
+    print(f" Loaded {len(sample_index)} samples from raw data (no splits)")
+    return sample_index
+
+
+if __name__ == "__main__":
+    # sanity check (raw mode)
+    idx = build_sample_index_all()
+    k = next(iter(idx))
+    print(k, idx[k])
