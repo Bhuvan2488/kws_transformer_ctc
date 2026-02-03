@@ -12,7 +12,7 @@ from src.training.optimizer import build_optimizer
 from src.training.scheduler import build_scheduler
 
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 100
 BATCH_SIZE = 16
 LEARNING_RATE = 3e-4
 WEIGHT_DECAY = 1e-2
