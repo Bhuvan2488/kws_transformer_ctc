@@ -71,6 +71,7 @@ def train():
         optimizer.load_state_dict(ckpt["optimizer_state"])
         scheduler.load_state_dict(ckpt["scheduler_state"])
         start_epoch = ckpt["epoch"] + 1
+        log(f" RESUMING TRAINING FROM EPOCH {start_epoch}")
 
     for epoch in range(start_epoch, NUM_EPOCHS + 1):
         model.train()
@@ -88,6 +89,8 @@ def train():
         avg_loss = total_loss / len(train_loader)
         scheduler.step(avg_loss)
 
+        log(f" Epoch {epoch}/{NUM_EPOCHS} completed | loss={avg_loss:.4f}")
+
         torch.save(
             {
                 "epoch": epoch,
@@ -95,7 +98,7 @@ def train():
                 "optimizer_state": optimizer.state_dict(),
                 "scheduler_state": scheduler.state_dict(),
                 "loss": avg_loss,
-                "label_map": label_map,   # 🔥 ONLY ADDITION
+                "label_map": label_map,
             },
             CHECKPOINT_DIR / f"model_epoch_{epoch}.pt",
         )
