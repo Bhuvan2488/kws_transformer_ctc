@@ -5,25 +5,28 @@ import json
 import statistics
 
 from src.data.annotation_loader import load_split_ids
+from src.data.label_builder import parse_annotation_file
 
 PREDICTIONS_PATH = Path("outputs/predictions/aligned_words.json")
 ANNOTATION_DIR = Path("data/raw/annotations")
 OUTPUT_REPORT = Path("outputs/predictions/eval_report.json")
+
 
 def load_predictions() -> List[Dict]:
     if not PREDICTIONS_PATH.exists():
         raise FileNotFoundError(f"[PREDICTIONS MISSING] {PREDICTIONS_PATH}")
     return json.loads(PREDICTIONS_PATH.read_text(encoding="utf-8"))
 
+
 def load_ground_truth(sample_id: str) -> List[Tuple[str, float, float]]:
     ann_path = ANNOTATION_DIR / f"{sample_id}_Annotated.txt"
-    gt = []
-    for line in ann_path.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        s, e, w = line.split("\t")
-        gt.append((w, float(s), float(e)))
-    return gt
+
+    # ✅ USE SAME STRICT PARSER AS PREPROCESSING/TRAINING
+    segments = parse_annotation_file(ann_path)
+
+    # return (word, start, end)
+    return [(word, start, end) for start, end, word in segments]
+
 
 def find_best_match(word, pred_start, gt_segments, used):
     candidates = [
@@ -35,12 +38,12 @@ def find_best_match(word, pred_start, gt_segments, used):
         return None, None
     return min(candidates, key=lambda x: abs(x[1][1] - pred_start))
 
+
 def evaluate():
     print("\n STEP 10 — TEST SET EVALUATION")
 
     test_ids = set(load_split_ids("test"))
     predictions = load_predictions()
-
     predictions = [p for p in predictions if p["sample_id"] in test_ids]
 
     start_err, end_err = [], []
@@ -91,6 +94,7 @@ def evaluate():
     print(json.dumps(report, indent=2))
 
     return report
+
 
 if __name__ == "__main__":
     evaluate()
